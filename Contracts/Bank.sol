@@ -51,7 +51,4 @@ function sellBook(uint256 _id, address _newOwner) public isAvailable(_id)  {
       return i_owner;
   }
 
-
-
-
 }
