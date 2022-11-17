@@ -33,13 +33,13 @@ contract Bank is ReentrancyGuard {
 
     address private immutable i_owner;
     uint256 private noOfAccounts;
-    uint256 private accountOpeningTime;
+    uint256 private accountOpeningTimestamp;
     uint256 private constant MINTIME_TOGETLOAN = 60;
     address[] private listOfAccounts;
     uint256 private totalLoanGiven;
     uint256 private totalLoanAmount;
     uint256 private availableLoanAmount;
-    uint256 private loanTime;
+    uint256 private loanTimestamp;
     uint256 private depositeTimeStamp;
     mapping(address => accountDetails) private accounts;
 
@@ -48,7 +48,7 @@ contract Bank is ReentrancyGuard {
     event accountOpen(string indexed name, address indexed accounNumber);
     event withdrawl(uint256 indexed _amount);
     event transferDetail(uint256 indexed _amount, address indexed _accountNumber);
-    event loanDetails(uint256 indexed loanAmount, uint256 indexed loanTime);
+    event loanDetails(uint256 indexed loanAmount, uint256 indexed loanTimestamp);
     event loanPaid(uint256 loanAmount);
     event AccountClosed(address accountNumber);
     event DepositeAmount(uint256 indexed depositAmount);
@@ -95,7 +95,7 @@ contract Bank is ReentrancyGuard {
         accounts[msg.sender].interestAmount = 0;
         noOfAccounts++;
         listOfAccounts.push(msg.sender);
-        accountOpeningTime = block.timestamp;
+        accountOpeningTimestamp = block.timestamp;
         // Emit an event when anybody opens account
         emit accountOpen(_name, msg.sender);
     }
@@ -143,7 +143,7 @@ contract Bank is ReentrancyGuard {
     function getLoan() public isAccountAvailable isAnyLoanBefore {
         uint256 loanAmount = (accounts[msg.sender].balance * 1) / 2;
         require(
-            block.timestamp > accountOpeningTime + MINTIME_TOGETLOAN,
+            block.timestamp > accountOpeningTimestamp + MINTIME_TOGETLOAN,
             "Your account is not old enough to get Loan"
         );
         require(availableLoanAmount > loanAmount, "Bank has not enough fund");
@@ -152,7 +152,7 @@ contract Bank is ReentrancyGuard {
         accounts[msg.sender].loanAmount += loanAmount;
         totalLoanGiven += loanAmount;
         availableLoanAmount -= loanAmount;
-        loanTime = block.timestamp;
+        loanTimestamp = block.timestamp;
 
         emit loanDetails(loanAmount, block.timestamp);
     }
@@ -168,7 +168,7 @@ contract Bank is ReentrancyGuard {
         );
         require(_amount <= accounts[msg.sender].balance, "You have not enough fund to pay loan");
 
-        if (block.timestamp > loanTime + 60) {
+        if (block.timestamp > loanTimestamp + 60) {
             accounts[msg.sender].balance -= amount;
             accounts[msg.sender].loanAmount -= _amount;
             totalLoanGiven -= _amount;
@@ -249,8 +249,8 @@ contract Bank is ReentrancyGuard {
         return i_owner;
     }
 
-    function getAccountOpeningTime() public view returns (uint256) {
-        return accountOpeningTime;
+    function getaccountOpeningTimestamp() public view returns (uint256) {
+        return accountOpeningTimestamp;
     }
 
     function getMinTimeForLoan() public pure returns (uint256) {
@@ -269,8 +269,8 @@ contract Bank is ReentrancyGuard {
         return availableLoanAmount;
     }
 
-    function getLoanTime() public view returns (uint256) {
-        return loanTime;
+    function getloanTimestamp() public view returns (uint256) {
+        return loanTimestamp;
     }
 
     receive() external payable {
