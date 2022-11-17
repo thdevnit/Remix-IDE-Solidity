@@ -87,12 +87,13 @@ contract Bank is ReentrancyGuard {
     }
 
     function openAccount(string memory _name, string memory _add) public isAlreadyOpened {
-        accounts[msg.sender].name = _name;
-        accounts[msg.sender].add = _add;
-        accounts[msg.sender].accountNumber = msg.sender;
-        accounts[msg.sender].balance = 0;
-        accounts[msg.sender].loanAmount = 0;
-        accounts[msg.sender].interestAmount = 0;
+        accountDetails storage _accounts = accounts[msg.sender]; 
+        _accounts.name = _name;
+        _accounts.add = _add;
+        _accounts.accountNumber = msg.sender;
+        _accounts.balance = 0;
+        _accounts.loanAmount = 0;
+        _accounts.interestAmount = 0;
         noOfAccounts++;
         listOfAccounts.push(msg.sender);
         accountOpeningTimestamp = block.timestamp;
@@ -133,7 +134,7 @@ contract Bank is ReentrancyGuard {
             accounts[_accountNumber].accountNumber == _accountNumber,
             "Receipent need to create account first"
         );
-        require(_accountNumber != msg.sender, "You can't transfer to yourself");
+        require(_accountNumber != msg.sender, "Self transfer is not allowed");
         accounts[msg.sender].balance -= _amount;
         accounts[_accountNumber].balance += _amount;
 
@@ -142,14 +143,15 @@ contract Bank is ReentrancyGuard {
 
     function getLoan() public isAccountAvailable isAnyLoanBefore {
         uint256 loanAmount = (accounts[msg.sender].balance * 1) / 2;
+        accountDetails storage _accounts = accounts[msg.sender];
         require(
             block.timestamp > accountOpeningTimestamp + MINTIME_TOGETLOAN,
             "Your account is not old enough to get Loan"
         );
         require(availableLoanAmount > loanAmount, "Bank has not enough fund");
         require(accounts[msg.sender].balance >= 5 ether, "You don't have enough funds to get Loan");
-        accounts[msg.sender].balance += loanAmount;
-        accounts[msg.sender].loanAmount += loanAmount;
+        _accounts.balance += loanAmount;
+        _accounts.loanAmount += loanAmount;
         totalLoanGiven += loanAmount;
         availableLoanAmount -= loanAmount;
         loanTimestamp = block.timestamp;
@@ -160,22 +162,23 @@ contract Bank is ReentrancyGuard {
     function payLoan(uint256 _amount) public isAccountAvailable {
         uint256 interestAmount = (_amount * 1) / 10;
         uint256 amount = _amount + interestAmount;
-        require(accounts[msg.sender].loanAmount != 0, "You don't have any loan");
+        accountDetails storage _accounts = accounts[msg.sender];
+        require(_accounts.loanAmount != 0, "You don't have any loan");
         require(_amount != 0, "Can't transfer 0 amount");
         require(
-            _amount <= accounts[msg.sender].loanAmount,
+            _amount <= _accounts.loanAmount,
             "You are giving amount more than you borrowed"
         );
-        require(_amount <= accounts[msg.sender].balance, "You have not enough fund to pay loan");
+        require(_amount <= _accounts.balance, "You have not enough fund to pay loan");
 
         if (block.timestamp > loanTimestamp + 60) {
-            accounts[msg.sender].balance -= amount;
-            accounts[msg.sender].loanAmount -= _amount;
+            _accounts.balance -= amount;
+            _accounts.loanAmount -= _amount;
             totalLoanGiven -= _amount;
             availableLoanAmount = totalLoanAmount - totalLoanGiven;
         } else {
-            accounts[msg.sender].balance -= _amount;
-            accounts[msg.sender].loanAmount -= _amount;
+            _accounts.balance -= _amount;
+            _accounts.loanAmount -= _amount;
             totalLoanGiven -= _amount;
             availableLoanAmount = totalLoanAmount - totalLoanGiven;
         }
@@ -184,13 +187,15 @@ contract Bank is ReentrancyGuard {
     }
 
     function getInterestOnSaving() public isAccountAvailable {
-        uint256 interestOnSaving = ((accounts[msg.sender].balance -
-            accounts[msg.sender].loanAmount) * 1) / 20;
-        require(accounts[msg.sender].balance != 0, "Deposit funds to get interest");
-        require(accounts[msg.sender].interestAmount == 0, "Interest already given");
-        accounts[msg.sender].interestAmount += interestOnSaving;
+        accountDetails storage _accounts = accounts[msg.sender];
+        uint256 interestOnSaving = ((_accounts.balance -
+            _accounts.loanAmount) * 1) / 20;
+
+        require(_accounts.balance != 0, "Deposit funds to get interest");
+        require(_accounts.interestAmount == 0, "Interest already given");
+        _accounts.interestAmount += interestOnSaving;
         if (block.timestamp > depositeTimeStamp + 60) {
-            accounts[msg.sender].balance += interestOnSaving;
+            _accounts.balance += interestOnSaving;
         } else {
             revert Bank__notEligibleForInterest();
         }
@@ -209,13 +214,14 @@ contract Bank is ReentrancyGuard {
             uint256 interestAmount
         )
     {
+        accountDetails storage _accounts = accounts[msg.sender];
         return (
-            accounts[msg.sender].name,
-            accounts[msg.sender].add,
-            accounts[msg.sender].accountNumber,
-            accounts[msg.sender].balance,
-            accounts[msg.sender].loanAmount,
-            accounts[msg.sender].interestAmount
+            _accounts.name,
+            _accounts.add,
+            _accounts.accountNumber,
+            _accounts.balance,
+            _accounts.loanAmount,
+            _accounts.interestAmount
         );
     }
 
