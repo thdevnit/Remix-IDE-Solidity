@@ -86,7 +86,7 @@ contract Bank is ReentrancyGuard {
         _;
     }
 
-    function openAccount(string memory _name, string memory _add) public isAlreadyOpened {
+    function openAccount(string memory _name, string memory _add) external isAlreadyOpened {
         accountDetails storage _accounts = accounts[msg.sender]; 
         _accounts.name = _name;
         _accounts.add = _add;
@@ -110,7 +110,7 @@ contract Bank is ReentrancyGuard {
         emit DepositeAmount(msg.value);
     }
 
-    function withdraw(uint256 _amount) public isAccountAvailable nonReentrant {
+    function withdraw(uint256 _amount) external isAccountAvailable nonReentrant {
         require(_amount != 0, "Can't transfer 0 amount");
         require(
             _amount <= accounts[msg.sender].balance,
@@ -125,7 +125,7 @@ contract Bank is ReentrancyGuard {
         emit withdrawl(_amount);
     }
 
-    function transfer(uint256 _amount, address _accountNumber) public isAccountAvailable {
+    function transfer(uint256 _amount, address _accountNumber) external isAccountAvailable {
         require(_amount != 0, "Can't transfer 0 amount");
         require(_accountNumber != address(0), "Need Valid account number to transfer");
         require(accounts[msg.sender].balance > 0, "You need to deposite amount before transfer");
@@ -141,7 +141,7 @@ contract Bank is ReentrancyGuard {
         emit transferDetail(_amount, _accountNumber);
     }
 
-    function getLoan() public isAccountAvailable isAnyLoanBefore {
+    function getLoan() external isAccountAvailable isAnyLoanBefore {
         uint256 loanAmount = (accounts[msg.sender].balance * 1) / 2;
         accountDetails storage _accounts = accounts[msg.sender];
         require(
@@ -159,7 +159,7 @@ contract Bank is ReentrancyGuard {
         emit loanDetails(loanAmount, block.timestamp);
     }
 
-    function payLoan(uint256 _amount) public isAccountAvailable {
+    function payLoan(uint256 _amount) external isAccountAvailable {
         uint256 interestAmount = (_amount * 1) / 10;
         uint256 amount = _amount + interestAmount;
         accountDetails storage _accounts = accounts[msg.sender];
@@ -186,7 +186,7 @@ contract Bank is ReentrancyGuard {
         emit loanPaid(_amount);
     }
 
-    function getInterestOnSaving() public isAccountAvailable {
+    function getInterestOnSaving() external isAccountAvailable {
         accountDetails storage _accounts = accounts[msg.sender];
         uint256 interestOnSaving = ((_accounts.balance -
             _accounts.loanAmount) * 1) / 20;
@@ -225,7 +225,7 @@ contract Bank is ReentrancyGuard {
         );
     }
 
-    function closeAccount() public isAccountAvailable {
+    function closeAccount() external isAccountAvailable {
         require(
             accounts[msg.sender].loanAmount == 0,
             "You need to pay your loan amount before closing"
