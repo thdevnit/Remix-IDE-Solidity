@@ -9,7 +9,7 @@ import "./ReentrancyGuard.sol";
 error Bank__AccountAlreadyOpened();
 error Bank__OpenAccount();
 error Bank_AlreadyLoanTaken();
-error Bank__notEligibleForInterest();
+error Bank__NotEligibleForInterest();
 
 /**    @title A sample Bank Contract
        @author Nitesh Singh
@@ -199,7 +199,7 @@ contract Bank is ReentrancyGuard {
         if (block.timestamp > depositeTimeStamp + 60) {
             _accounts.balance += interestOnSaving;
         } else {
-            revert Bank__notEligibleForInterest();
+            revert Bank__NotEligibleForInterest();
         }
     }
 
