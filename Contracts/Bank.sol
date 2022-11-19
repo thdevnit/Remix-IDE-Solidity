@@ -47,12 +47,13 @@ contract Bank is ReentrancyGuard {
     /* Events */
 
     event accountOpen(string indexed name, address indexed accounNumber);
+    event DepositeAmount(uint256 indexed depositAmount);
     event withdrawl(uint256 indexed _amount);
     event transferDetail(uint256 indexed _amount, address indexed _accountNumber);
     event loanDetails(uint256 indexed loanAmount, uint256 indexed loanTimestamp);
     event loanPaid(uint256 loanAmount);
     event AccountClosed(address accountNumber);
-    event DepositeAmount(uint256 indexed depositAmount);
+    
 
     /* Functions */
 
