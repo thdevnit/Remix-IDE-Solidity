@@ -47,12 +47,12 @@ contract Bank is ReentrancyGuard {
     /* Events */
 
     event accountOpen(string indexed name, address indexed accounNumber);
-    event DepositeAmount(uint256 indexed depositAmount);
+    event depositeAmount(uint256 indexed depositAmount);
     event withdrawl(uint256 indexed _amount);
     event transferDetail(uint256 indexed _amount, address indexed _accountNumber);
     event loanDetails(uint256 indexed loanAmount, uint256 indexed loanTimestamp);
     event loanPaid(uint256 loanAmount);
-    event AccountClosed(address accountNumber);
+    event accountClosed(address accountNumber);
     
 
     /* Functions */
@@ -109,7 +109,7 @@ contract Bank is ReentrancyGuard {
         totalLoanAmount = (address(this).balance * 2) / 5;
         availableLoanAmount = totalLoanAmount - totalLoanGiven;
         depositeTimeStamp = block.timestamp;
-        emit DepositeAmount(msg.value);
+        emit depositeAmount(msg.value);
     }
 
     function withdraw(uint256 _amount) external isAccountAvailable nonReentrant {
@@ -236,7 +236,7 @@ contract Bank is ReentrancyGuard {
         delete accounts[msg.sender];
         noOfAccounts--;
 
-        emit AccountClosed(accounts[msg.sender].accountNumber);
+        emit accountClosed(accounts[msg.sender].accountNumber);
     }
 
     /* Getter Functions*/
