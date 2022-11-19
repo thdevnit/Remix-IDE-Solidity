@@ -41,6 +41,7 @@ contract Bank is ReentrancyGuard {
     uint256 private availableLoanAmount;
     uint256 private loanTimestamp;
     uint256 private depositeTimeStamp;
+    
     mapping(address => accountDetails) private accounts;
 
     /* Events */
