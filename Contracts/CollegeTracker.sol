@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.0;
 
+
+
+
 /* Errors */
 
 error CollegeTracker__notUniversityAdmin();
@@ -10,6 +13,9 @@ error CollegeTracker__alreadyEnrolled();
 error CollegeTracker__notAffiliated();
 error CollegeTracker__blockedAddingStudents();
 error CollegeTracker__notCollegeAdmin();
+error CollegeTracker__collegeNameNotAvailable();
+error CollegeTracker__regNumberNotAvailable();
+
 
 
 /**    @title A sample College Tracker Smart Contract
@@ -19,6 +25,8 @@ error CollegeTracker__notCollegeAdmin();
 
 
 contract CollegeTracker {
+
+    
 
      /* Type Declarations */
 
@@ -44,6 +52,7 @@ contract CollegeTracker {
     address private immutable i_universityAdmin;
     uint256 private s_numOfColleges;
     string[] private s_collegesName;
+    string[] private s_regNumber;
 
     mapping(address => collegeDetails) private s_collegeDetails;
     mapping(uint256 => studentDetails) private s_studentDetails;
@@ -102,14 +111,30 @@ contract CollegeTracker {
      
      /* @title This is a addCollege function
         @notice This function adds colleges to the blockchain ledger
-        @dev Only university admin can add colleges using name, address and registration number of any college
+        @dev Only university admin can add colleges using name, address and registration number of any college,Name,address,regNumber must be unique
    */
 
 
     function addCollege(string memory _name, address _address, string memory _regNumber) external onlyUniversityAdmin isAlreadyAdded(_address) {
-            
+        
         require(_address != address(0),"Need valid address to add college");
-        require(_address != i_universityAdmin,"admin can't add college on his own address");    
+        require(_address != i_universityAdmin,"admin can't add college on his own address");   
+          for(uint256 i=0; i< s_collegesName.length; i++){
+              string memory collegeName = s_collegesName[i];
+              if(keccak256(abi.encodePacked(collegeName))==keccak256(abi.encodePacked(_name))) {
+            
+             revert CollegeTracker__collegeNameNotAvailable();
+             }}
+
+
+             for(uint256 i=0; i< s_regNumber.length; i++){
+              string memory regNumber = s_regNumber[i];
+              if(keccak256(abi.encodePacked(regNumber))==keccak256(abi.encodePacked(_regNumber))) {
+            
+             revert CollegeTracker__regNumberNotAvailable();
+             }}
+
+         
 
         collegeDetails storage clgDetails = s_collegeDetails[_address];
 
@@ -122,10 +147,12 @@ contract CollegeTracker {
 
         s_numOfColleges++;
         s_collegesName.push(_name);
+        s_regNumber.push(_regNumber);
         
 
         emit collegeAdded(_name,_address,_regNumber);
     }
+
 
      /* @title This is a blockCollege function
         @notice This function blocks colleges.
@@ -158,6 +185,49 @@ contract CollegeTracker {
     function cancelAffiliation(address _address) external onlyUniversityAdmin isCollegeAffiliated(_address) {
         s_collegeDetails[_address].affiliated = false;
         s_numOfColleges--;
+         for(uint256 i=0; i< s_collegesName.length ;i++){
+            string memory collegeName = s_collegesName[i];
+            if(keccak256(abi.encodePacked(collegeName)) != keccak256(abi.encodePacked(s_collegeDetails[_address].collegeName))){
+                continue;
+            } removeCollegeName(i);
+        } 
+
+         for(uint256 i=0; i< s_regNumber.length ;i++){
+            string memory regNumber = s_regNumber[i];
+            if(keccak256(abi.encodePacked(regNumber)) != keccak256(abi.encodePacked(s_collegeDetails[_address].regNum))){
+                continue;
+            } removeRegNumber(i);
+        } 
+
+        delete (s_collegeDetails[_address]);
+    }
+     
+    /*  @title This is a removeCollegeName function
+        @notice This function remove the college Name from array
+        @dev This function is called internally
+   */
+    
+
+    function removeCollegeName(uint256 _index) internal {
+        require(_index < s_collegesName.length,"Index is out of bound");
+        for(uint256 i=_index; i < s_collegesName.length-1; i++){
+            s_collegesName[i] = s_collegesName[i+1];
+        }
+        s_collegesName.pop();
+    }
+
+
+      /*  @title This is a removeRegNumber function
+          @notice This function remove the college Registration Number from array
+          @dev This function is called internally
+   */
+
+    function removeRegNumber(uint256 _index) internal {
+         require(_index < s_regNumber.length,"Index is out of bound");
+        for(uint256 i=_index; i < s_regNumber.length-1; i++){
+            s_regNumber[i] = s_regNumber[i+1];
+        }
+        s_regNumber.pop();
     }
 
 
@@ -259,9 +329,7 @@ contract CollegeTracker {
         return i_universityAdmin;
     }
 
-     function getCollegesName(uint256 _index) public view returns(string memory){
-        return s_collegesName[_index];
-    }
+    
     
 
 }
