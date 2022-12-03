@@ -328,8 +328,4 @@ contract CollegeTracker {
      function getAdmin() public view returns(address){
         return i_universityAdmin;
     }
-
-    
-    
-
 }
