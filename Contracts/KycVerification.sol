@@ -35,7 +35,6 @@ contract KycVerification {
         uint256 phoneNum;
         string bankName;
         address bankUniqueAdd;
-        bool kycStatus;
     }
 
     /* State Variables */
@@ -46,6 +45,7 @@ contract KycVerification {
 
     mapping(address => bankDetails) private s_bankDetails;
     mapping(uint256 => customerDetails) private s_customerDetails;
+    mapping(uint256 => bool) private s_kycStatus;
     
 
     /* Events */
@@ -172,7 +172,6 @@ contract KycVerification {
         custDetails.phoneNum = _phoneNum;
         custDetails.bankName = s_bankDetails[_address].name;
         custDetails.bankUniqueAdd = s_bankDetails[_address].uniqueAdd;
-        custDetails.kycStatus = false;
 
         s_bankDetails[_address].numOfCustomers++;
 
@@ -193,9 +192,9 @@ contract KycVerification {
             s_customerDetails[_phoneNum].bankUniqueAdd == _address,
             "This is not a bank customer"
         );
-        require(s_customerDetails[_phoneNum].kycStatus == false, "KYC already done");
+        require(s_kycStatus[_phoneNum] == false, "KYC already done");
 
-        s_customerDetails[_phoneNum].kycStatus = true;
+        s_kycStatus[_phoneNum] = true;
 
         emit KycVerified(_phoneNum);
     }
@@ -283,8 +282,7 @@ contract KycVerification {
             string memory add,
             uint256 phoneNum,
             string memory bankName,
-            address bankUniqueAdd,
-            bool kycStatus
+            address bankUniqueAdd
         )
     {
         customerDetails memory customers = s_customerDetails[_phoneNum];
@@ -293,8 +291,7 @@ contract KycVerification {
             customers.add,
             customers.phoneNum,
             customers.bankName,
-            customers.bankUniqueAdd,
-            customers.kycStatus
+            customers.bankUniqueAdd
         );
     }
 
@@ -330,6 +327,10 @@ contract KycVerification {
     }
 
     /* Getter Functions */
+
+    function getKycStatus(uint256 _phoneNum) public view returns(bool){
+        return s_kycStatus[_phoneNum];
+    }
 
     function getAdmin() public view returns (address) {
         return i_centralBankAdmin;
