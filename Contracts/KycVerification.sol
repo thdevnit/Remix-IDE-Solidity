@@ -46,7 +46,7 @@ contract KycVerification {
 
     mapping(address => bankDetails) private s_bankDetails;
     mapping(uint256 => customerDetails) private s_customerDetails;
-    // mapping(uint256 => bool) private s_kycStatus;
+    
 
     /* Events */
 
