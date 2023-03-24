@@ -2,13 +2,13 @@
 pragma solidity ^0.8.0;
 
 contract myDetails {
-    string private name;
+    uint256 private age;
 
-    function setDetails(string memory _name) public {
-        name = _name;
+    function setDetails(string memory _age) public {
+        age = _age;
     }
 
-    function getName() public view returns (string memory) {
-        return name;
+    function getAge() public view returns (string memory) {
+        return age;
     }
 }
